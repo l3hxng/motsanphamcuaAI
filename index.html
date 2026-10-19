@@ -67,7 +67,7 @@
       position: fixed;
       top: 15%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate3d(-50%, -50%, 0);
       width: min(720px, 92vw);
       height: min(720px, 92vw);
       background: radial-gradient(circle, rgba(254, 215, 170, 0.45) 0%, rgba(253, 230, 138, 0.3) 40%, transparent 70%);
@@ -116,35 +116,36 @@
       object-fit: contain;
       will-change: transform, opacity;
       animation: ambientFloat 9s ease-in-out infinite alternate;
+      --ambient-scale: 1;
     }
 
-    /* Chiều sâu lớp Xa (Far): Nhỏ nhắn, mờ ảo nhẹ, trôi rất chậm */
+    /* Chiều sâu lớp Xa (Far): Nhỏ nhắn, mờ ảo nhẹ, trôi rất chậm - Tối ưu GPU */
     .layer-far .ambient-bg-sticker {
-      filter: drop-shadow(0 2px 8px rgba(180, 83, 9, 0.12)) blur(0.4px);
       opacity: 0.45;
+      will-change: transform;
     }
 
-    /* Chiều sâu lớp Vừa (Mid): Rõ nét vừa phải, bay bổng dịu dàng */
+    /* Chiều sâu lớp Vừa (Mid): Rõ nét vừa phải, bay bổng dịu dàng - Tối ưu GPU */
     .layer-mid .ambient-bg-sticker {
-      filter: drop-shadow(0 4px 12px rgba(180, 83, 9, 0.18));
       opacity: 0.68;
+      will-change: transform;
     }
 
-    /* Chiều sâu lớp Gần (Near): Tươi tắn, nổi bật hơn, phản hồi chuột nhạy */
+    /* Chiều sâu lớp Gần (Near): Tươi tắn, nổi bật hơn - Tối ưu GPU */
     .layer-near .ambient-bg-sticker {
-      filter: drop-shadow(0 6px 16px rgba(180, 83, 9, 0.25));
-      opacity: 0.86;
+      opacity: 0.88;
+      will-change: transform;
     }
 
     @keyframes ambientFloat {
       0% {
-        transform: translate(0, 0) rotate(var(--rot0, 0deg)) scale(1);
+        transform: translate3d(0, 0, 0) rotate(var(--rot0, 0deg)) scale(var(--ambient-scale, 1));
       }
       50% {
-        transform: translate(var(--dx, 12px), calc(-1 * var(--dy, 16px))) rotate(var(--rot1, 6deg)) scale(1.05);
+        transform: translate3d(var(--dx, 12px), calc(-1 * var(--dy, 16px)), 0) rotate(var(--rot1, 6deg)) scale(calc(var(--ambient-scale, 1) * 1.05));
       }
       100% {
-        transform: translate(calc(-1 * var(--dx, 12px)), var(--dy, 16px)) rotate(var(--rot2, -6deg)) scale(0.96);
+        transform: translate3d(calc(-1 * var(--dx, 12px)), var(--dy, 16px), 0) rotate(var(--rot2, -6deg)) scale(calc(var(--ambient-scale, 1) * 0.96));
       }
     }
 
@@ -156,6 +157,7 @@
       user-select: none;
       filter: drop-shadow(0 4px 10px rgba(180, 83, 9, 0.25));
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      will-change: transform;
     }
     .card-peeker-tl {
       top: -24px;
@@ -172,12 +174,12 @@
       animation: peekerWiggleRight 4.5s ease-in-out infinite alternate;
     }
     @keyframes peekerWiggleLeft {
-      0%, 100% { transform: rotate(-12deg) scale(0.98); }
-      50% { transform: rotate(4deg) scale(1.08) translateY(-4px); }
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(-12deg) scale(0.98); }
+      50% { transform: translate3d(0, -4px, 0) rotate(4deg) scale(1.08); }
     }
     @keyframes peekerWiggleRight {
-      0%, 100% { transform: rotate(10deg) scale(0.98); }
-      50% { transform: rotate(-5deg) scale(1.08) translateY(-5px); }
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(10deg) scale(0.98); }
+      50% { transform: translate3d(0, -5px, 0) rotate(-5deg) scale(1.08); }
     }
 
     #flowerContainer, #burstContainer, #trailContainer {
@@ -195,16 +197,15 @@
        ======================================================== */
     #cur {
       position: fixed;
-      top: -100px;
-      left: -100px;
+      top: 0;
+      left: 0;
       width: 48px;
       height: 48px;
       pointer-events: none;
       z-index: 99999;
-      transform: translate(-50%, -50%);
-      transition: transform 0.06s ease-out;
+      transform: translate3d(-100px, -100px, 0);
+      will-change: transform;
       display: none;
-      filter: drop-shadow(0 4px 8px rgba(180, 83, 9, 0.28));
     }
     #cur img {
       width: 100%;
@@ -213,79 +214,79 @@
       pointer-events: none;
     }
 
-    /* Vết hoa rơi theo chuột */
+    /* Vết hoa rơi theo chuột - Tối ưu GPU */
     .flower-trail {
       position: fixed;
       pointer-events: none;
       font-size: 16px;
       user-select: none;
-      transform: translate(-50%, -50%);
+      transform: translate3d(-50%, -50%, 0);
       animation: trailFade 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-      filter: drop-shadow(0 2px 4px rgba(244, 114, 182, 0.35));
+      will-change: transform, opacity;
+      text-shadow: 0 2px 4px rgba(244, 114, 182, 0.45);
     }
     @keyframes trailFade {
       0% {
         opacity: 0.95;
-        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        transform: translate3d(-50%, -50%, 0) scale(1) rotate(0deg);
       }
       100% {
         opacity: 0;
-        transform: translate(-50%, -90px) scale(0.35) rotate(45deg);
+        transform: translate3d(-50%, -90px, 0) scale(0.35) rotate(45deg);
       }
     }
 
-    /* STICKER BAY LƠ LỬNG (THAY CHO BÔNG HOA ĐƠN ĐIỆU CŨ) */
+    /* STICKER BAY LƠ LỬNG (THAY CHO BÔNG HOA ĐƠN ĐIỆU CŨ) - Tối ưu GPU */
     .floating-sticker {
       position: fixed;
       bottom: -70px;
       user-select: none;
       pointer-events: none;
       object-fit: contain;
-      filter: drop-shadow(0 4px 8px rgba(180, 83, 9, 0.18));
       animation: floatStickerUpward linear forwards;
       will-change: transform, opacity;
       z-index: 6;
     }
     @keyframes floatStickerUpward {
       0% {
-        transform: translateX(0) rotate(0deg) scale(0.65);
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(0.65);
         opacity: 0;
       }
       8% {
         opacity: 0.95;
       }
       50% {
-        transform: translateX(var(--drift)) rotate(calc(var(--rot) * 0.5)) scale(1);
+        transform: translate3d(var(--drift), -50vh, 0) rotate(calc(var(--rot) * 0.5)) scale(1);
       }
       90% {
         opacity: 0.95;
       }
       100% {
-        transform: translateX(calc(var(--drift) * -0.6)) translateY(-118vh) rotate(var(--rot)) scale(0.85);
+        transform: translate3d(calc(var(--drift) * -0.6), -118vh, 0) rotate(var(--rot)) scale(0.85);
         opacity: 0;
       }
     }
 
-    /* Vụ nổ sticker & hoa khi click / nhấn Space */
+    /* Vụ nổ sticker & hoa khi click / nhấn Space - Tối ưu GPU */
     .burst-sticker {
       position: absolute;
       pointer-events: none;
       user-select: none;
       object-fit: contain;
-      animation: burstStickerAnim 0.95s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
-      filter: drop-shadow(0 4px 8px rgba(180, 83, 9, 0.22));
+      animation: burstStickerAnim 0.85s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+      will-change: transform, opacity;
     }
     @keyframes burstStickerAnim {
       0% {
         opacity: 1;
-        transform: translate(0, 0) scale(0.4) rotate(0deg);
+        transform: translate3d(0, 0, 0) scale(0.4) rotate(0deg);
       }
       70% {
         opacity: 0.95;
       }
       100% {
         opacity: 0;
-        transform: translate(var(--tx), var(--ty)) scale(1.15) rotate(var(--trot));
+        transform: translate3d(var(--tx), var(--ty), 0) scale(1.15) rotate(var(--trot));
       }
     }
 
@@ -294,20 +295,20 @@
       pointer-events: none;
       user-select: none;
       font-size: 22px;
-      animation: burstAnim 0.9s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
-      filter: drop-shadow(0 0 6px rgba(244, 114, 182, 0.4));
+      animation: burstAnim 0.8s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+      will-change: transform, opacity;
     }
     @keyframes burstAnim {
       0% {
         opacity: 1;
-        transform: translate(0, 0) scale(0.4) rotate(0deg);
+        transform: translate3d(0, 0, 0) scale(0.4) rotate(0deg);
       }
       70% {
         opacity: 0.95;
       }
       100% {
         opacity: 0;
-        transform: translate(var(--tx), var(--ty)) scale(1.3) rotate(var(--trot));
+        transform: translate3d(var(--tx), var(--ty), 0) scale(1.3) rotate(var(--trot));
       }
     }
 
@@ -371,13 +372,11 @@
     @keyframes stageSlowReveal {
       0% {
         opacity: 0;
-        transform: translateY(24px) scale(0.96);
-        filter: blur(8px);
+        transform: translate3d(0, 24px, 0) scale(0.96);
       }
       100% {
         opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
+        transform: translate3d(0, 0, 0) scale(1);
       }
     }
 
@@ -423,13 +422,11 @@
     @keyframes lineEntrance {
       0% {
         opacity: 0;
-        transform: translateY(-16px) scale(0.94);
-        filter: blur(4px);
+        transform: translate3d(0, -16px, 0) scale(0.94);
       }
       100% {
         opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
+        transform: translate3d(0, 0, 0) scale(1);
       }
     }
 
@@ -444,30 +441,35 @@
     }
 
     .flying-char.scattered {
+      will-change: transform;
       animation: floatChar 3.5s ease-in-out infinite alternate;
     }
     @keyframes floatChar {
       0% {
-        transform: translate(var(--sx), var(--sy)) rotate(var(--srot)) scale(1);
+        transform: translate3d(var(--sx), var(--sy), 0) rotate(var(--srot)) scale(1);
       }
       50% {
-        transform: translate(calc(var(--sx) + 12px), calc(var(--sy) - 15px)) rotate(calc(var(--srot) + 8deg)) scale(1.05);
+        transform: translate3d(calc(var(--sx) + 12px), calc(var(--sy) - 15px), 0) rotate(calc(var(--srot) + 8deg)) scale(1.05);
       }
       100% {
-        transform: translate(calc(var(--sx) - 10px), calc(var(--sy) + 18px)) rotate(calc(var(--srot) - 6deg)) scale(0.96);
+        transform: translate3d(calc(var(--sx) - 10px), calc(var(--sy) + 18px), 0) rotate(calc(var(--srot) - 6deg)) scale(0.96);
       }
     }
 
     .flying-char.assembled {
-      transform: translate(0, 0) rotate(0deg) scale(1) !important;
-      animation: assembleGlow 2.5s ease-in-out infinite alternate;
+      transform: translate3d(0, 0, 0) rotate(0deg) scale(1) !important;
+      text-shadow: 0 0 10px rgba(244, 114, 182, 0.45), 0 0 18px rgba(245, 158, 11, 0.5);
+      will-change: transform, opacity;
+      animation: assembleGlow 2.5s 1.2s ease-in-out infinite alternate;
     }
     @keyframes assembleGlow {
       0% {
-        filter: drop-shadow(0 0 6px rgba(244, 114, 182, 0.4));
+        opacity: 0.88;
+        transform: translate3d(0, 0, 0) scale(1);
       }
       100% {
-        filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.6));
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1.03);
       }
     }
 
@@ -492,11 +494,12 @@
     }
     .deco-fly-item.scattered {
       position: absolute;
+      will-change: transform;
       animation: floatChar 3.5s ease-in-out infinite alternate;
     }
     .deco-fly-item.assembled {
       position: relative;
-      transform: translate(0, 0) rotate(0deg) scale(1) !important;
+      transform: translate3d(0, 0, 0) rotate(0deg) scale(1) !important;
     }
 
     /* Sticker Chiikawa & Usagi bay lượn sinh động quanh màn hình đầu */
@@ -518,16 +521,17 @@
       filter: drop-shadow(0 5px 12px rgba(180, 83, 9, 0.22));
       animation: stageStickerFloat 3.8s ease-in-out infinite alternate;
       transition: transform 1.2s cubic-bezier(0.18, 0.89, 0.32, 1.2), opacity 0.8s;
+      will-change: transform;
     }
     @keyframes stageStickerFloat {
       0% {
-        transform: translate(var(--sx), var(--sy)) rotate(-8deg) scale(0.95);
+        transform: translate3d(var(--sx), var(--sy), 0) rotate(-8deg) scale(0.95);
       }
       50% {
-        transform: translate(calc(var(--sx) + 8px), calc(var(--sy) - 14px)) rotate(8deg) scale(1.06);
+        transform: translate3d(calc(var(--sx) + 8px), calc(var(--sy) - 14px), 0) rotate(8deg) scale(1.06);
       }
       100% {
-        transform: translate(calc(var(--sx) - 8px), calc(var(--sy) + 12px)) rotate(-4deg) scale(0.96);
+        transform: translate3d(calc(var(--sx) - 8px), calc(var(--sy) + 12px), 0) rotate(-4deg) scale(0.96);
       }
     }
 
@@ -577,11 +581,11 @@
     @keyframes elemFadeEntrance {
       0% {
         opacity: 0;
-        transform: translateY(14px);
+        transform: translate3d(0, 14px, 0);
       }
       100% {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0);
       }
     }
 
@@ -603,15 +607,16 @@
       justify-content: center;
       gap: 8px;
       user-select: none;
+      will-change: transform;
     }
 
     .btn:hover {
-      transform: translateY(-3px) scale(1.03);
+      transform: translate3d(0, -3px, 0) scale(1.03);
       box-shadow: 0 15px 35px rgba(244, 114, 182, 0.45), 0 0 25px rgba(251, 191, 36, 0.35);
     }
 
     .btn:active {
-      transform: translateY(1px) scale(0.98);
+      transform: translate3d(0, 1px, 0) scale(0.98);
     }
 
     .btn-decode {
@@ -625,15 +630,26 @@
     @keyframes buttonBloomEntrance {
       0% {
         opacity: 0;
-        transform: scale(0.7) translateY(20px);
+        transform: translate3d(0, 20px, 0) scale(0.7);
         box-shadow: 0 0 0 rgba(245, 158, 11, 0);
       }
       70% {
-        transform: scale(1.05) translateY(-2px);
+        transform: translate3d(0, -2px, 0) scale(1.05);
       }
       100% {
         opacity: 1;
-        transform: scale(1) translateY(0);
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    @keyframes btnPulse {
+      0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1);
+        box-shadow: 0 10px 25px rgba(244, 114, 182, 0.35), 0 0 15px rgba(251, 191, 36, 0.25);
+      }
+      50% {
+        transform: translate3d(0, -3px, 0) scale(1.04);
+        box-shadow: 0 16px 32px rgba(244, 114, 182, 0.5), 0 0 25px rgba(251, 191, 36, 0.45);
       }
     }
 
@@ -658,17 +674,18 @@
     }
 
     .glass-card {
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: 2px solid rgba(251, 191, 36, 0.42);
       border-radius: 28px;
-      box-shadow: 0 20px 50px rgba(180, 83, 9, 0.14), 0 0 35px rgba(244, 114, 182, 0.16);
+      box-shadow: 0 16px 40px rgba(180, 83, 9, 0.12), 0 0 25px rgba(244, 114, 182, 0.12);
       padding: clamp(26px, 5vw, 38px) clamp(18px, 4vw, 28px);
       text-align: center;
       position: relative;
       overflow: hidden;
       transform-origin: top center;
+      will-change: transform;
     }
 
     /* Thanh nẹp cố định ở đầu bức thư */
@@ -691,7 +708,7 @@
       font-size: 15px;
       line-height: 1;
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-      transform: translateY(-2px);
+      transform: translate3d(0, -2px, 0);
     }
 
     /* Con lăn cuộn mở bức thư từ trên xuống */
@@ -711,7 +728,7 @@
       pointer-events: none;
       opacity: 0;
       top: 0%;
-      transform: translateY(-50%);
+      transform: translate3d(0, -50%, 0);
     }
     .roller-knob {
       font-size: 16px;
@@ -736,20 +753,20 @@
         max-height: 0px;
         opacity: 0.3;
         clip-path: inset(0 0 99% 0 round 24px 24px 0 0);
-        transform: scaleY(0.04) translateY(-25px);
+        transform: translate3d(0, -25px, 0) scaleY(0.04);
         box-shadow: 0 4px 10px rgba(180, 83, 9, 0.1);
       }
       25% {
         opacity: 1;
       }
       80% {
-        transform: scaleY(1) translateY(0);
+        transform: translate3d(0, 0, 0) scaleY(1);
       }
       100% {
         max-height: 1600px;
         opacity: 1;
         clip-path: inset(0 0 0% 0 round 28px);
-        transform: scaleY(1) translateY(0);
+        transform: translate3d(0, 0, 0) scaleY(1);
         box-shadow: 0 20px 50px rgba(180, 83, 9, 0.14), 0 0 35px rgba(244, 114, 182, 0.16);
       }
     }
@@ -758,30 +775,30 @@
       0% {
         top: 0%;
         opacity: 1;
-        transform: translateY(-50%) scaleX(0.92);
+        transform: translate3d(0, -50%, 0) scaleX(0.92);
       }
       88% {
         opacity: 1;
-        transform: translateY(-50%) scaleX(1);
+        transform: translate3d(0, -50%, 0) scaleX(1);
       }
       100% {
         top: 100%;
         opacity: 0;
-        transform: translateY(-20%) scaleX(1.02);
+        transform: translate3d(0, -20%, 0) scaleX(1.02);
       }
     }
 
     @keyframes contentScrollReveal {
       0% {
         opacity: 0;
-        transform: translateY(-35px);
+        transform: translate3d(0, -35px, 0);
       }
       35% {
         opacity: 0.7;
       }
       100% {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0);
       }
     }
 
@@ -789,7 +806,7 @@
       max-height: none;
       clip-path: none;
       opacity: 1;
-      transform: scale(1);
+      transform: translate3d(0, 0, 0) scale(1);
     }
     .glass-card.unrolled .scroll-roller-bottom {
       display: none;
@@ -1011,11 +1028,11 @@
       text-shadow: 0 0 6px rgba(219, 39, 119, 0.3);
     }
     @keyframes gentleShake {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      15% { transform: translateY(-1.5px) rotate(-1.5deg); }
-      30% { transform: translateY(1.5px) rotate(1.5deg); }
-      45% { transform: translateY(-1px) rotate(0.8deg); }
-      60% { transform: translateY(1px) rotate(-0.8deg); }
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      15% { transform: translate3d(0, -1.5px, 0) rotate(-1.5deg); }
+      30% { transform: translate3d(0, 1.5px, 0) rotate(1.5deg); }
+      45% { transform: translate3d(0, -1px, 0) rotate(0.8deg); }
+      60% { transform: translate3d(0, 1px, 0) rotate(-0.8deg); }
     }
 
     /* Emoji giọt lệ 🥲 vector tương thích mọi thiết bị */
@@ -1036,12 +1053,13 @@
       text-align: right;
       margin: 10px 4px 20px 4px;
       opacity: 0;
-      transform: translateY(10px);
+      transform: translate3d(0, 10px, 0);
       transition: opacity 0.8s ease, transform 0.8s ease;
+      will-change: transform, opacity;
     }
     .card-signature.show {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
 
     /* Khu vực nút bấm dưới thiệp */
@@ -1051,12 +1069,13 @@
       gap: 12px;
       justify-content: center;
       opacity: 0;
-      transform: translateY(10px);
+      transform: translate3d(0, 10px, 0);
       transition: opacity 0.8s ease, transform 0.8s ease;
+      will-change: transform, opacity;
     }
     .card-actions.show {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
 
     .btn-secondary {
@@ -1098,11 +1117,11 @@
     @keyframes musicPlayerSlideIn {
       0% {
         opacity: 0;
-        transform: translateY(30px) scale(0.85);
+        transform: translate3d(0, 30px, 0) scale(0.85);
       }
       100% {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translate3d(0, 0, 0) scale(1);
       }
     }
     .music-player:hover {
@@ -1188,7 +1207,8 @@
       border-left: 2px solid rgba(245, 158, 11, 0.3);
       box-shadow: -10px 0 35px rgba(180, 83, 9, 0.2);
       z-index: 10000;
-      transform: translateX(100%);
+      transform: translate3d(100%, 0, 0);
+      will-change: transform;
       transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.1);
       overflow-y: auto;
       padding: 24px 20px;
@@ -1198,7 +1218,7 @@
       color: #3b2010;
     }
     .settings-panel.open {
-      transform: translateX(0);
+      transform: translate3d(0, 0, 0);
     }
 
     .settings-panel h3 {
@@ -1298,7 +1318,8 @@
       position: fixed;
       top: 24px;
       left: 50%;
-      transform: translateX(-50%) translateY(-30px);
+      transform: translate3d(-50%, -30px, 0);
+      will-change: transform, opacity;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(14px);
       border: 1.5px solid rgba(245, 158, 11, 0.4);
@@ -1317,7 +1338,7 @@
     }
     .toast.show {
       opacity: 1;
-      transform: translateX(-50%) translateY(0);
+      transform: translate3d(-50%, 0, 0);
     }
 
     /* ========================================================
@@ -1346,8 +1367,8 @@
       }
       /* Tinh chỉnh sticker ambient trên màn hình di động */
       .ambient-bg-sticker {
-        transform: scale(0.72) !important;
-        opacity: 0.55 !important;
+        --ambient-scale: 0.72;
+        opacity: 0.65;
       }
       .card-peeker-tl {
         top: -18px;
@@ -1791,17 +1812,24 @@
 
       function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let s of stars) {
+        for (let i = 0; i < stars.length; i++) {
+          const s = stars[i];
           if (!prefersReduced) {
             s.twinklePhase += s.twinkleSpeed;
           }
           const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(s.twinklePhase));
+
+          // Hào quang mềm mại xung quanh hạt sao (không gây chậm GPU/CPU như shadowBlur)
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.radius * 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = s.color;
+          ctx.globalAlpha = Math.max(0.04, Math.min(0.35, currentAlpha * 0.35));
+          ctx.fill();
+
+          // Tâm hạt sao sáng lấp lánh
           ctx.beginPath();
           ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-          ctx.fillStyle = s.color;
           ctx.globalAlpha = Math.max(0.1, Math.min(1, currentAlpha));
-          ctx.shadowBlur = 4;
-          ctx.shadowColor = s.color;
           ctx.fill();
         }
         ctx.globalAlpha = 1;
@@ -1941,8 +1969,7 @@
 
       window.addEventListener('mousemove', (e) => {
         if (cur && cur.style.display === 'block') {
-          cur.style.left = e.clientX + 'px';
-          cur.style.top = e.clientY + 'px';
+          cur.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
         }
 
         // Tạo vệt hoa rơi theo chuột (tiết lưu 60ms)
@@ -1951,7 +1978,7 @@
           lastTrailTime = now;
           createMouseTrail(e.clientX, e.clientY);
         }
-      });
+      }, { passive: true });
 
       document.addEventListener('mouseleave', () => {
         if (cur) cur.style.opacity = '0';
@@ -1983,7 +2010,9 @@
       const baseDelay = Math.max(280, 1400 - (CFG.flowerSpeed * 100));
 
       stickerSpawnInterval = setInterval(() => {
-        if (activeStickersCount >= MAX_STICKERS) return;
+        if (document.hidden) return;
+        const limit = (window.innerWidth < 600) ? 20 : MAX_STICKERS;
+        if (activeStickersCount >= limit) return;
         spawnSingleSticker();
       }, isMusicPlaying ? baseDelay * 0.65 : baseDelay);
     }
@@ -2030,10 +2059,15 @@
       activeStickersCount++;
       container.appendChild(sticker);
 
-      sticker.addEventListener('animationend', () => {
-        sticker.remove();
-        activeStickersCount--;
-      }, { once: true });
+      let cleaned = false;
+      const cleanup = () => {
+        if (cleaned) return;
+        cleaned = true;
+        if (sticker.parentNode) sticker.remove();
+        activeStickersCount = Math.max(0, activeStickersCount - 1);
+      };
+      sticker.addEventListener('animationend', cleanup, { once: true });
+      setTimeout(cleanup, Math.round((duration + 1.2) * 1000));
     }
 
     /* ========================================================
@@ -2043,13 +2077,14 @@
       const now = Date.now();
       if (now - lastBurstTime < 120) return;
       lastBurstTime = now;
+      playSparkleChime();
 
       const container = document.getElementById('burstContainer');
       if (!container) return;
 
       const x = originX !== undefined ? originX : window.innerWidth / 2;
       const y = originY !== undefined ? originY : window.innerHeight / 2;
-      const count = 15;
+      const count = (window.innerWidth < 600) ? 10 : 15;
 
       for (let i = 0; i < count; i++) {
         // Nửa sticker mini, nửa cánh hoa lấp lánh
@@ -2127,7 +2162,7 @@
           img.style.setProperty('--sx', sx + 'px');
           img.style.setProperty('--sy', sy + 'px');
           img.style.setProperty('--srot', srot + 'deg');
-          img.style.transform = `translate(${sx}px, ${sy}px) rotate(${srot}deg)`;
+          img.style.transform = `translate3d(${sx}px, ${sy}px, 0) rotate(${srot}deg)`;
 
           mosaicWrap.appendChild(img);
         });
@@ -2198,7 +2233,7 @@
         span.style.setProperty('--sy', sy + 'px');
         span.style.setProperty('--srot', srot + 'deg');
         span.style.animationDelay = (idx * 0.08) + 's';
-        span.style.transform = `translate(${sx}px, ${sy}px) rotate(${srot}deg)`;
+        span.style.transform = `translate3d(${sx}px, ${sy}px, 0) rotate(${srot}deg)`;
 
         container.appendChild(span);
       });
@@ -2484,9 +2519,151 @@
     }
 
     /* ========================================================
-       10. QUẢN LÝ NHẠC NỀN & TỰ ĐỘNG PHÁT (AUDIO PLAYER)
+       10. QUẢN LÝ ÂM THANH, NHẠC NỀN & HIỆU ỨNG (AUDIO & SOUND FX)
        ======================================================== */
     let autoplayGestureListenersAttached = false;
+    let audioCtx = null;
+    let isSynthesizedMelodyPlaying = false;
+    let melodyTimer = null;
+    let melodyStepIndex = 0;
+
+    // Bản nhạc hộp nhạc / Kalimba dự phòng lãng mạn (Dịu êm, trong trẻo)
+    const MELODY_SCORE = [
+      { f: 523.25, d: 380 },  // C5
+      { f: 659.25, d: 380 },  // E5
+      { f: 783.99, d: 380 },  // G5
+      { f: 1046.50, d: 700 }, // C6
+      { f: 880.00, d: 380 },  // A5
+      { f: 783.99, d: 380 },  // G5
+      { f: 659.25, d: 700 },  // E5
+      { f: 587.33, d: 380 },  // D5
+      { f: 659.25, d: 380 },  // E5
+      { f: 783.99, d: 380 },  // G5
+      { f: 880.00, d: 380 },  // A5
+      { f: 783.99, d: 700 },  // G5
+      { f: 587.33, d: 380 },  // D5
+      { f: 659.25, d: 380 },  // E5
+      { f: 523.25, d: 850 },  // C5
+      { f: 0, d: 350 },       // Khoảng nghỉ
+    ];
+
+    function getAudioContext() {
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+          }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+      } catch (e) {
+        console.warn('Web Audio API không được hỗ trợ:', e);
+      }
+      return audioCtx;
+    }
+
+    // Hiệu ứng âm thanh chuông pha lê lấp lánh (Sparkle Chime) khi nổ hoa & sticker
+    function playSparkleChime() {
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        // Hợp âm pha lê 3 nốt cao vút (G6, C7, E7)
+        const chimeFreqs = [1567.98, 2093.00, 2637.02];
+        chimeFreqs.forEach((freq, idx) => {
+          const noteTime = now + idx * 0.038;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, noteTime);
+
+          gain.gain.setValueAtTime(0.0001, noteTime);
+          gain.gain.linearRampToValueAtTime(0.065, noteTime + 0.006);
+          gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.36);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(noteTime);
+          osc.stop(noteTime + 0.38);
+        });
+      } catch (e) {
+        // Tự động bỏ qua nếu trình duyệt giới hạn tương tác
+      }
+    }
+
+    // Phát từng nốt hộp nhạc / Kalimba với âm sắc êm dịu
+    function playMusicBoxNote(freq, durationMs) {
+      if (!freq || freq <= 0) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // Sóng tam giác mang lại âm hưởng phím gỗ/kim loại ngọt ngào
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(freq, now);
+
+        // Âm bội octave tạo độ vang ngân trong trẻo
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(freq * 2, now);
+
+        const decaySec = Math.max(0.4, (durationMs / 1000) * 1.6);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(0.075, now + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + decaySec);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + decaySec);
+        osc2.stop(now + decaySec);
+      } catch (e) {}
+    }
+
+    function stepSynthesizedMelody() {
+      if (!isSynthesizedMelodyPlaying) return;
+      const item = MELODY_SCORE[melodyStepIndex % MELODY_SCORE.length];
+      melodyStepIndex++;
+      playMusicBoxNote(item.f, item.d);
+      melodyTimer = setTimeout(stepSynthesizedMelody, item.d);
+    }
+
+    function startSynthesizedMelody() {
+      if (isSynthesizedMelodyPlaying) return;
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      isSynthesizedMelodyPlaying = true;
+      isMusicPlaying = true;
+      updateMusicUI(true);
+      startStickerSpawner();
+      removeAutoplayGestureListeners();
+      melodyStepIndex = 0;
+      stepSynthesizedMelody();
+    }
+
+    function stopSynthesizedMelody() {
+      isSynthesizedMelodyPlaying = false;
+      if (melodyTimer) {
+        clearTimeout(melodyTimer);
+        melodyTimer = null;
+      }
+      const audio = document.getElementById('bgMusic');
+      if (!audio || audio.paused) {
+        isMusicPlaying = false;
+        updateMusicUI(false);
+      }
+    }
 
     function setupAudioPlayer() {
       const audio = document.getElementById('bgMusic');
@@ -2494,15 +2671,32 @@
 
       if (CFG.musicSrc) {
         audio.src = CFG.musicSrc;
+      } else if (ASSETS.audio) {
+        audio.src = ASSETS.audio;
       }
 
       audio.addEventListener('error', () => {
-        console.warn('File nhạc chưa sẵn sàng:', CFG.musicSrc);
-        showToast('🎵 Chưa có nhạc – Thêm file vào audio/yeu-sac-yeu.mp3');
-        updateMusicUI(false);
+        console.warn('Nguồn nhạc HTML5 lỗi hoặc chưa sẵn sàng:', audio.src);
+        // Bước 1: Thử chuyển sang bản nhạc nhúng ASSETS.audio nếu chưa thử
+        if (audio.src !== ASSETS.audio && ASSETS.audio) {
+          console.log('Tự động chuyển sang nhạc nhúng ASSETS.audio...');
+          audio.src = ASSETS.audio;
+          audio.play().catch(() => {
+            // Bước 2: Dự phòng toàn diện bằng Web Audio API
+            startSynthesizedMelody();
+            showToast('🎵 Đang phát giai điệu hộp nhạc thần tiên 🌸');
+          });
+          return;
+        }
+        // Bước 2: Dự phòng toàn diện bằng Web Audio API
+        startSynthesizedMelody();
+        showToast('🎵 Đang phát giai điệu hộp nhạc thần tiên 🌸');
       });
 
       audio.addEventListener('play', () => {
+        if (isSynthesizedMelodyPlaying) {
+          stopSynthesizedMelody();
+        }
         isMusicPlaying = true;
         updateMusicUI(true);
         startStickerSpawner();
@@ -2510,9 +2704,11 @@
       });
 
       audio.addEventListener('pause', () => {
-        isMusicPlaying = false;
-        updateMusicUI(false);
-        startStickerSpawner();
+        if (!isSynthesizedMelodyPlaying) {
+          isMusicPlaying = false;
+          updateMusicUI(false);
+          startStickerSpawner();
+        }
       });
 
       // Kích hoạt phát nhạc ngay khi mở trang web
@@ -2525,31 +2721,60 @@
 
     function toggleMusic() {
       const audio = document.getElementById('bgMusic');
-      if (!audio) return;
 
-      if (!CFG.musicSrc) {
-        showToast('🎵 Chưa thiết lập đường dẫn nhạc!');
+      // Nếu nhạc hộp nhạc Web Audio đang phát -> Tạm dừng
+      if (isSynthesizedMelodyPlaying) {
+        stopSynthesizedMelody();
         return;
       }
 
-      if (audio.paused) {
+      // Nếu audio element đang phát -> Tạm dừng
+      if (audio && !audio.paused) {
+        audio.pause();
+        updateMusicUI(false);
+        return;
+      }
+
+      // Đánh thức AudioContext trước nếu bị suspended
+      getAudioContext();
+
+      // Thử phát audio element
+      if (audio) {
+        if (!audio.src) {
+          audio.src = CFG.musicSrc || ASSETS.audio;
+        }
         audio.play().then(() => {
           updateMusicUI(true);
           removeAutoplayGestureListeners();
         }).catch((err) => {
-          console.warn('Lỗi khi phát nhạc:', err);
-          showToast('🎵 Chưa có nhạc – Thêm file vào audio/yeu-sac-yeu.mp3');
+          console.warn('Lỗi khi phát audio HTML5, kích hoạt nhạc hộp nhạc:', err);
+          if (audio.src !== ASSETS.audio && ASSETS.audio) {
+            audio.src = ASSETS.audio;
+            audio.play().then(() => {
+              updateMusicUI(true);
+              removeAutoplayGestureListeners();
+            }).catch(() => {
+              startSynthesizedMelody();
+              showToast('🎵 Đang phát giai điệu hộp nhạc thần tiên 🌸');
+            });
+          } else {
+            startSynthesizedMelody();
+            showToast('🎵 Đang phát giai điệu hộp nhạc thần tiên 🌸');
+          }
         });
       } else {
-        audio.pause();
-        updateMusicUI(false);
+        startSynthesizedMelody();
+        showToast('🎵 Đang phát giai điệu hộp nhạc thần tiên 🌸');
       }
     }
 
     function attemptPlayMusic() {
       if (!CFG.musicEnabled) return;
       const audio = document.getElementById('bgMusic');
-      if (!audio || !CFG.musicSrc) return;
+      if (!audio) return;
+      if (!audio.src) {
+        audio.src = CFG.musicSrc || ASSETS.audio;
+      }
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -2565,12 +2790,21 @@
     }
 
     function onFirstAutoplayGesture() {
+      getAudioContext();
       const audio = document.getElementById('bgMusic');
-      if (audio && audio.paused && CFG.musicEnabled) {
+      if (audio && audio.paused && CFG.musicEnabled && !isSynthesizedMelodyPlaying) {
+        if (!audio.src) {
+          audio.src = CFG.musicSrc || ASSETS.audio;
+        }
         audio.play().then(() => {
           isMusicPlaying = true;
           updateMusicUI(true);
-        }).catch(() => {});
+        }).catch(() => {
+          if (!isMusicPlaying) {
+            startSynthesizedMelody();
+            showToast('🎵 Đang phát giai điệu hộp nhạc thần tiên 🌸');
+          }
+        });
       }
       removeAutoplayGestureListeners();
     }
@@ -2604,7 +2838,11 @@
         }
       }
       if (status) {
-        status.textContent = playing ? 'Đang phát 🌸' : 'Nhấn để nghe 🎵';
+        if (isSynthesizedMelodyPlaying) {
+          status.textContent = 'Hộp nhạc 🌸';
+        } else {
+          status.textContent = playing ? 'Đang phát 🌸' : 'Nhấn để nghe 🎵';
+        }
       }
     }
 
