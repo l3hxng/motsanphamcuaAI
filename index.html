@@ -2649,7 +2649,7 @@
         isMusicPlaying = true;
         updateMusicUI(true);
         startStickerSpawner();
-        removeAutoplayGestureListeners();
+        if (!audio.muted) removeAutoplayGestureListeners(); // còn tắt tiếng thì giữ lại để bật tiếng ở lần chạm đầu
       });
 
       audio.addEventListener('pause', () => {
@@ -2660,16 +2660,10 @@
         }
       });
 
-      // Chờ trang tải xong + rảnh rỗi mới chuẩn bị nhạc & thử tự phát (có thể bị trình duyệt chặn)
-      const warm = () => {
-        ensureAudioSrc(audio);
-        attemptPlayMusic();
-      };
-      const schedule = () => (window.requestIdleCallback ? requestIdleCallback(warm, { timeout: 3000 }) : setTimeout(warm, 1500));
-      if (document.readyState === 'complete') schedule();
-      else window.addEventListener('load', schedule, { once: true });
-
+      // Phát nhạc NGAY khi mở trang. Nếu trình duyệt chặn tiếng, phát ở chế độ tắt tiếng
+      // và bật tiếng ở lần chạm/click đầu tiên (xem attemptPlayMusic / onFirstAutoplayGesture)
       setupAutoplayGestureListeners();
+      attemptPlayMusic();
     }
 
     function toggleMusic() {
@@ -2677,6 +2671,12 @@
 
       if (isSynthesizedMelodyPlaying) {
         stopSynthesizedMelody();
+        return;
+      }
+      if (audio && !audio.paused && audio.muted) {   // đang chạy tắt tiếng -> bật tiếng
+        audio.muted = false;
+        updateMusicUI(true);
+        removeAutoplayGestureListeners();
         return;
       }
       if (audio && !audio.paused) {
@@ -2710,6 +2710,7 @@
       if (!CFG.musicEnabled) return;
       const audio = $('bgMusic');
       if (!audio || !ensureAudioSrc(audio)) return;
+      audio.muted = false;
       const p = audio.play();
       if (p !== undefined) {
         p.then(() => {
@@ -2717,17 +2718,32 @@
           updateMusicUI(true);
           removeAutoplayGestureListeners();
         }).catch(() => {
-          setupAutoplayGestureListeners(); // chờ cử chỉ chạm đầu tiên
+          // Bị chặn tiếng: vẫn cho nhạc chạy ở chế độ tắt tiếng (được phép), chờ chạm đầu tiên để bật tiếng
+          audio.muted = true;
+          const p2 = audio.play();
+          if (p2 !== undefined) p2.then(() => updateMusicUI(true)).catch(() => {});
+          setupAutoplayGestureListeners();
         });
       }
     }
 
     // Chỉ các sự kiện được trình duyệt tính là "tương tác thật" mới mở khoá được âm thanh
-    const GESTURE_EVENTS = ['click', 'touchend', 'keydown'];
+    const GESTURE_EVENTS = ['pointerdown', 'click', 'touchend', 'keydown'];
 
-    function onFirstAutoplayGesture() {
+    function onFirstAutoplayGesture(e) {
+      // Chạm/vuốt bằng ngón tay chỉ tính khi là "touchend"/"click" thật; bỏ qua pointerdown không phải chuột
+      if (e && e.type === 'pointerdown' && e.pointerType !== 'mouse') return;
       getAudioContext();
       const audio = $('bgMusic');
+      if (audio && audio.muted) {
+        audio.muted = false;
+        if (audio.paused && CFG.musicEnabled && ensureAudioSrc(audio)) {
+          audio.play().catch(() => { audio.muted = true; audio.play().catch(() => {}); setupAutoplayGestureListeners(); });
+        }
+        updateMusicUI(!audio.paused);
+        removeAutoplayGestureListeners();
+        return;
+      }
       if (audio && audio.paused && CFG.musicEnabled && !isSynthesizedMelodyPlaying && ensureAudioSrc(audio)) {
         audio.play().then(() => {
           isMusicPlaying = true;
@@ -2747,7 +2763,7 @@
     function setupAutoplayGestureListeners() {
       if (autoplayGestureListenersAttached) return;
       autoplayGestureListenersAttached = true;
-      GESTURE_EVENTS.forEach((evt) => window.addEventListener(evt, onFirstAutoplayGesture, { once: true, passive: true }));
+      GESTURE_EVENTS.forEach((evt) => window.addEventListener(evt, onFirstAutoplayGesture, { passive: true }));
     }
 
     function removeAutoplayGestureListeners() {
@@ -2762,7 +2778,10 @@
       if (disc) disc.classList.toggle('playing', !!playing);
       if (status) {
         if (isSynthesizedMelodyPlaying) status.textContent = 'Hộp nhạc 🌸';
-        else status.textContent = playing ? 'Đang phát 🌸' : 'Nhấn để nghe 🎵';
+        else if (playing) {
+          const a = $('bgMusic');
+          status.textContent = (a && a.muted) ? 'Chạm để bật tiếng 🔊' : 'Đang phát 🌸';
+        } else status.textContent = 'Nhấn để nghe 🎵';
       }
     }
 
